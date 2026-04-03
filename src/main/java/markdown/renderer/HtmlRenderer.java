@@ -86,6 +86,42 @@ public class HtmlRenderer implements Renderer {
                 builder.closeTag("code");
             }
 
+            case ListNode list -> {
+
+                builder.openTag("ul");
+                builder.newLine();
+
+                for (Node child : list.getChildren()) {
+                    renderNode(child, builder);
+                }
+
+                builder.closeTag("ul");
+                builder.newLine();
+            }
+
+            case ListItemNode item -> {
+
+                builder.openTag("li");
+
+                for (Node child : item.getChildren()) {
+                    renderNode(child, builder);
+                }
+
+                builder.closeTag("li");
+                builder.newLine();
+            }
+
+            case LinkNode link -> {
+
+                builder.openTag("a href=\"" + link.getUrl() + "\"");
+
+                for (Node child : link.getChildren()) {
+                    renderNode(child, builder);
+                }
+
+                builder.closeTag("a");
+            }
+
             default -> throw new RuntimeException("Unknown node type: " + node.getClass());
         }
     }

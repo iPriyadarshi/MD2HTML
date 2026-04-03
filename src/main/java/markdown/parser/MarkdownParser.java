@@ -37,14 +37,54 @@ public class MarkdownParser implements Parser {
             return parseHeading();
         }
 
-        if (check(TokenType.TEXT)) {
+        if (check(TokenType.DASH)) {
+            return parseList();
+        }
+
+        if (check(TokenType.TEXT) || check(TokenType.OPEN_BRACKET)) {
             return parseParagraph();
         }
 
-        // skip unexpected tokens
         advance();
 
         return null;
+    }
+
+    private ListNode parseList() {
+
+        ListNode list = new ListNode();
+
+        while (check(TokenType.DASH)) {
+
+            advance(); // consume -
+
+            ListItemNode item = new ListItemNode();
+
+            boolean firstText = true;
+
+            while (!check(TokenType.NEWLINE) && !isAtEnd()) {
+
+                Node inline = parseInline();
+
+                if (inline instanceof TextNode textNode && firstText) {
+
+                    String trimmed = textNode.getText().stripLeading();
+
+                    item.addChild(new TextNode(trimmed));
+
+                    firstText = false;
+                } else if (inline != null) {
+
+                    item.addChild(inline);
+                }
+            }
+
+            consumeNewline();
+
+            list.addChild(item);
+        }
+
+        return list;
     }
 
     private HeadingNode parseHeading() {
@@ -103,6 +143,10 @@ public class MarkdownParser implements Parser {
 
     private Node parseInline() {
 
+        if (check(TokenType.OPEN_BRACKET)) {
+            return parseLink();
+        }
+
         if (check(TokenType.STAR)) {
 
             if (checkNext(TokenType.STAR)) {
@@ -117,6 +161,37 @@ public class MarkdownParser implements Parser {
         }
 
         return parseText();
+    }
+
+    private LinkNode parseLink() {
+
+        advance(); // [
+
+        StringBuilder text = new StringBuilder();
+
+        while (!check(TokenType.CLOSE_BRACKET) && !isAtEnd()) {
+
+            text.append(advance().getValue());
+        }
+
+        advance(); // ]
+
+        advance(); // (
+
+        StringBuilder url = new StringBuilder();
+
+        while (!check(TokenType.CLOSE_PAREN) && !isAtEnd()) {
+
+            url.append(advance().getValue());
+        }
+
+        advance(); // )
+
+        LinkNode link = new LinkNode(url.toString());
+
+        link.addChild(new TextNode(text.toString()));
+
+        return link;
     }
 
     private BoldNode parseBold() {
