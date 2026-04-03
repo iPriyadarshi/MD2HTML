@@ -1,4 +1,5 @@
 package markdown.parser.nodes;
 
-public class DocumentNode {
+public class DocumentNode extends Node {
+
 }
