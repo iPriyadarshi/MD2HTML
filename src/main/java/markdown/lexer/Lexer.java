@@ -1,4 +1,9 @@
 package markdown.lexer;
 
-public class Lexer {
+import java.util.List;
+
+public interface Lexer {
+
+    List<Token> tokenize(String input);
+
 }
