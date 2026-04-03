@@ -27,4 +27,6 @@ public interface NodeVisitor {
     void visitListItem(ListItemNode node);
 
     void visitLink(LinkNode node);
+
+    void visitHorizontalRule(HorizontalRuleNode node);
 }

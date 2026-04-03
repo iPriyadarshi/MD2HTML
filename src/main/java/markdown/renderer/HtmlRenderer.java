@@ -175,4 +175,11 @@ public class HtmlRenderer implements Renderer, NodeVisitor {
 
         builder.closeTag("a");
     }
+
+    @Override
+    public void visitHorizontalRule(HorizontalRuleNode node) {
+
+        builder.addText("<hr>");
+        builder.newLine();
+    }
 }

@@ -24,6 +24,9 @@ public enum TokenType {
     // multiline Codeblocks
     TRIPLE_BACKTICK,
 
+    // horizontal rule
+    HORIZONTAL_RULE,
+
 
     EOF
 }

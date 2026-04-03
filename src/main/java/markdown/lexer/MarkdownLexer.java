@@ -17,6 +17,18 @@ public class MarkdownLexer implements Lexer {
         this.tokens = new ArrayList<>();
 
         while (!isAtEnd()) {
+            // Detect horizontal rule at line start
+            if (isStartOfLine() && isHorizontalRuleHere()) {
+
+                tokens.add(new Token(TokenType.HORIZONTAL_RULE, "", position));
+
+                // move until newline
+                while (!isAtEnd() && peek() != '\n') {
+                    advance();
+                }
+
+                continue;
+            }
 
             char current = peek();
 
@@ -89,6 +101,45 @@ public class MarkdownLexer implements Lexer {
         tokens.add(new Token(TokenType.EOF, "", position));
 
         return tokens;
+    }
+
+    private boolean isHorizontalRuleHere() {
+        int temp = position;
+        char symbol = 0;
+        int count = 0;
+
+        while (temp < input.length()) {
+
+            char c = input.charAt(temp);
+
+            if (c == '\n') break;
+
+            if (c == ' ') {
+                temp++;
+                continue;
+            }
+
+            if (c == '-' || c == '_' || c == '*') {
+                if (symbol == 0) {
+                    symbol = c;
+                }
+
+                if (c != symbol) {
+                    return false;
+                }
+
+                count++;
+                temp++;
+                continue;
+            }
+            return false;
+        }
+        return count >= 3;
+    }
+
+    private boolean isStartOfLine() {
+
+        return position == 0 || input.charAt(position - 1) == '\n';
     }
 
     private boolean matchTripleBacktick() {

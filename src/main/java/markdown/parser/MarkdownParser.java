@@ -31,10 +31,18 @@ public class MarkdownParser implements Parser {
         return document;
     }
 
+    /*
+        BLOCK PARSING
+     */
+
     private Node parseBlock() {
 
         if (check(TokenType.TRIPLE_BACKTICK)) {
             return parseCodeBlock();
+        }
+
+        if (check(TokenType.HORIZONTAL_RULE)) {
+            return parseHorizontalRule();
         }
 
         if (check(TokenType.HASH)) {
@@ -45,11 +53,11 @@ public class MarkdownParser implements Parser {
             return parseOrderedList();
         }
 
-        if (check(TokenType.DASH)) {
+        if (check(TokenType.DASH) || check(TokenType.STAR)) {
             return parseList();
         }
 
-        if (check(TokenType.TEXT) || check(TokenType.OPEN_BRACKET)) {
+        if (check(TokenType.TEXT) || check(TokenType.OPEN_BRACKET) || check(TokenType.STAR) || check(TokenType.BACKTICK)) {
             return parseParagraph();
         }
 
@@ -58,13 +66,29 @@ public class MarkdownParser implements Parser {
         return null;
     }
 
+    /*
+        HORIZONTAL RULE
+     */
+
+    private HorizontalRuleNode parseHorizontalRule() {
+
+        advance(); // consume HORIZONTAL_RULE
+
+        consumeNewline();
+
+        return new HorizontalRuleNode();
+    }
+
+    /*
+        UNORDERED LIST
+     */
+
     private ListNode parseList() {
 
         ListNode list = new ListNode();
 
-        while (check(TokenType.DASH)) {
-
-            advance(); // consume -
+        while (check(TokenType.DASH) || check(TokenType.STAR)) {
+            advance(); // consume '-' or '*'
 
             ListItemNode item = new ListItemNode();
 
@@ -94,6 +118,10 @@ public class MarkdownParser implements Parser {
 
         return list;
     }
+
+    /*
+        ORDERED LIST
+     */
 
     private OrderedListNode parseOrderedList() {
 
@@ -131,13 +159,16 @@ public class MarkdownParser implements Parser {
         return list;
     }
 
+    /*
+        CODE BLOCK
+     */
+
     private CodeBlockNode parseCodeBlock() {
 
         advance(); // consume ```
 
         String language = "";
 
-        // optional language identifier
         if (!check(TokenType.NEWLINE) && !isAtEnd()) {
 
             language = advance().getValue().strip();
@@ -167,11 +198,14 @@ public class MarkdownParser implements Parser {
         return codeBlock;
     }
 
+    /*
+        HEADING
+     */
+
     private HeadingNode parseHeading() {
 
         int level = 0;
 
-        // count number of #
         while (match(TokenType.HASH)) {
             level++;
         }
@@ -188,7 +222,6 @@ public class MarkdownParser implements Parser {
 
                 String value = token.getValue();
 
-                // remove space after ###
                 if (firstText) {
                     value = value.stripLeading();
                     firstText = false;
@@ -202,6 +235,10 @@ public class MarkdownParser implements Parser {
 
         return heading;
     }
+
+    /*
+        PARAGRAPH
+     */
 
     private ParagraphNode parseParagraph() {
 
@@ -221,6 +258,10 @@ public class MarkdownParser implements Parser {
         return paragraph;
     }
 
+    /*
+        INLINE PARSING
+     */
+
     private Node parseInline() {
 
         if (check(TokenType.OPEN_BRACKET)) {
@@ -229,10 +270,12 @@ public class MarkdownParser implements Parser {
 
         if (check(TokenType.STAR)) {
 
+            // bold
             if (checkNext(TokenType.STAR)) {
                 return parseBold();
             }
 
+            // italic
             return parseItalic();
         }
 
@@ -242,6 +285,10 @@ public class MarkdownParser implements Parser {
 
         return parseText();
     }
+
+    /*
+        LINK
+     */
 
     private LinkNode parseLink() {
 
@@ -274,6 +321,10 @@ public class MarkdownParser implements Parser {
         return link;
     }
 
+    /*
+        BOLD (supports nested inline)
+     */
+
     private BoldNode parseBold() {
 
         advance(); // *
@@ -296,6 +347,10 @@ public class MarkdownParser implements Parser {
         return bold;
     }
 
+    /*
+        ITALIC (supports nested inline)
+     */
+
     private ItalicNode parseItalic() {
 
         advance(); // *
@@ -315,6 +370,10 @@ public class MarkdownParser implements Parser {
 
         return italic;
     }
+
+    /*
+        INLINE CODE
+     */
 
     private CodeNode parseCode() {
 
@@ -339,7 +398,9 @@ public class MarkdownParser implements Parser {
         return new TextNode(token.getValue());
     }
 
-    // helper methods
+    /*
+        HELPERS
+     */
 
     private boolean checkNext(TokenType type) {
 
@@ -368,6 +429,7 @@ public class MarkdownParser implements Parser {
     private Token advance() {
 
         if (!isAtEnd()) {
+
             position++;
         }
 
@@ -392,6 +454,7 @@ public class MarkdownParser implements Parser {
     private void consumeNewline() {
 
         if (check(TokenType.NEWLINE)) {
+
             advance();
         }
     }
