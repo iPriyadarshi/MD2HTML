@@ -1,4 +1,9 @@
 package markdown.renderer;
 
-public class Renderer {
+import markdown.parser.nodes.Node;
+
+public interface Renderer {
+
+    String render(Node node);
+
 }
