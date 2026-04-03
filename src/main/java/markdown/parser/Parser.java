@@ -1,4 +1,12 @@
 package markdown.parser;
 
-public class Parser {
+import markdown.lexer.Token;
+import markdown.parser.nodes.DocumentNode;
+
+import java.util.List;
+
+public interface Parser {
+
+    DocumentNode parse(List<Token> tokens);
+
 }
