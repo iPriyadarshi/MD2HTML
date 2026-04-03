@@ -18,5 +18,12 @@ public enum TokenType {
     OPEN_PAREN,    // (
     CLOSE_PAREN,   // )
 
+    // ordered list
+    NUMBER, DOT,
+
+    // multiline Codeblocks
+    TRIPLE_BACKTICK,
+
+
     EOF
 }

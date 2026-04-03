@@ -17,20 +17,15 @@ public class HtmlRenderer implements Renderer {
     private void renderNode(Node node, HtmlBuilder builder) {
 
         switch (node) {
-
             case DocumentNode document -> {
-
                 for (Node child : document.getChildren()) {
                     renderNode(child, builder);
                 }
             }
 
             case HeadingNode heading -> {
-
                 String tag = "h" + heading.getLevel();
-
                 builder.openTag(tag);
-
                 for (Node child : heading.getChildren()) {
                     renderNode(child, builder);
                 }
@@ -40,9 +35,7 @@ public class HtmlRenderer implements Renderer {
             }
 
             case ParagraphNode paragraph -> {
-
                 builder.openTag("p");
-
                 for (Node child : paragraph.getChildren()) {
                     renderNode(child, builder);
                 }
@@ -54,40 +47,30 @@ public class HtmlRenderer implements Renderer {
             case TextNode textNode -> builder.addText(textNode.getText());
 
             case BoldNode bold -> {
-
                 builder.openTag("strong");
-
                 for (Node child : bold.getChildren()) {
                     renderNode(child, builder);
                 }
-
                 builder.closeTag("strong");
             }
 
             case ItalicNode italic -> {
-
                 builder.openTag("em");
-
                 for (Node child : italic.getChildren()) {
                     renderNode(child, builder);
                 }
-
                 builder.closeTag("em");
             }
 
             case CodeNode code -> {
-
                 builder.openTag("code");
-
                 for (Node child : code.getChildren()) {
                     renderNode(child, builder);
                 }
-
                 builder.closeTag("code");
             }
 
             case ListNode list -> {
-
                 builder.openTag("ul");
                 builder.newLine();
 
@@ -111,6 +94,19 @@ public class HtmlRenderer implements Renderer {
                 builder.newLine();
             }
 
+            case OrderedListNode list -> {
+
+                builder.openTag("ol");
+                builder.newLine();
+
+                for (Node child : list.getChildren()) {
+                    renderNode(child, builder);
+                }
+
+                builder.closeTag("ol");
+                builder.newLine();
+            }
+
             case LinkNode link -> {
 
                 builder.openTag("a href=\"" + link.getUrl() + "\"");
@@ -120,6 +116,29 @@ public class HtmlRenderer implements Renderer {
                 }
 
                 builder.closeTag("a");
+            }
+
+            case CodeBlockNode codeBlock -> {
+
+                builder.openTag("pre");
+
+                if (!codeBlock.getLanguage().isEmpty()) {
+                    builder.openTag("code class=\"language-" + codeBlock.getLanguage() + "\"");
+                } else {
+                    builder.openTag("code");
+                }
+
+                builder.newLine();
+
+
+                for (Node child : codeBlock.getChildren()) {
+                    renderNode(child, builder);
+                }
+
+                builder.closeTag("code");
+                builder.closeTag("pre");
+
+                builder.newLine();
             }
 
             default -> throw new RuntimeException("Unknown node type: " + node.getClass());

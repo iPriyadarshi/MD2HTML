@@ -33,8 +33,16 @@ public class MarkdownParser implements Parser {
 
     private Node parseBlock() {
 
+        if (check(TokenType.TRIPLE_BACKTICK)) {
+            return parseCodeBlock();
+        }
+
         if (check(TokenType.HASH)) {
             return parseHeading();
+        }
+
+        if (check(TokenType.NUMBER) && checkNext(TokenType.DOT)) {
+            return parseOrderedList();
         }
 
         if (check(TokenType.DASH)) {
@@ -85,6 +93,82 @@ public class MarkdownParser implements Parser {
         }
 
         return list;
+    }
+
+    private OrderedListNode parseOrderedList() {
+
+        OrderedListNode list = new OrderedListNode();
+
+        while (check(TokenType.NUMBER) && checkNext(TokenType.DOT)) {
+
+            advance(); // number
+            advance(); // dot
+
+            ListItemNode item = new ListItemNode();
+
+            boolean firstText = true;
+
+            while (!check(TokenType.NEWLINE) && !isAtEnd()) {
+
+                Node inline = parseInline();
+
+                if (inline instanceof TextNode textNode && firstText) {
+
+                    item.addChild(new TextNode(textNode.getText().stripLeading()));
+
+                    firstText = false;
+                } else if (inline != null) {
+
+                    item.addChild(inline);
+                }
+            }
+
+            consumeNewline();
+
+            list.addChild(item);
+        }
+
+        return list;
+    }
+
+    private CodeBlockNode parseCodeBlock() {
+
+        advance(); // consume ```
+
+        String language = "";
+
+        // optional language identifier
+        if (!check(TokenType.NEWLINE) && !isAtEnd()) {
+
+            language = advance().getValue().strip();
+        }
+
+        consumeNewline();
+
+        CodeBlockNode codeBlock = new CodeBlockNode(language);
+
+        while (!check(TokenType.TRIPLE_BACKTICK) && !isAtEnd()) {
+
+            Token token = advance();
+
+            if (token.getType() == TokenType.NEWLINE) {
+
+                codeBlock.addChild(
+                        new TextNode("\n")
+                );
+            } else {
+
+                codeBlock.addChild(
+                        new TextNode(token.getValue())
+                );
+            }
+        }
+
+        advance(); // closing ```
+
+        consumeNewline();
+
+        return codeBlock;
     }
 
     private HeadingNode parseHeading() {

@@ -38,8 +38,13 @@ public class MarkdownLexer implements Lexer {
                     break;
 
                 case '`':
-                    addToken(TokenType.BACKTICK, "`");
-                    advance();
+                    if (matchTripleBacktick()) {
+                        addToken(TokenType.TRIPLE_BACKTICK, "```");
+                        position += 3;
+                    } else {
+                        addToken(TokenType.BACKTICK, "`");
+                        advance();
+                    }
                     break;
 
                 case '[':
@@ -67,6 +72,15 @@ public class MarkdownLexer implements Lexer {
                     advance();
                     break;
 
+                case '.':
+                    addToken(TokenType.DOT, ".");
+                    advance();
+                    break;
+
+                case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
+                    tokenizeNumber();
+                    break;
+
                 default:
                     tokenizeText();
             }
@@ -75,6 +89,24 @@ public class MarkdownLexer implements Lexer {
         tokens.add(new Token(TokenType.EOF, "", position));
 
         return tokens;
+    }
+
+    private boolean matchTripleBacktick() {
+
+        return position + 2 < input.length() && input.charAt(position) == '`' && input.charAt(position + 1) == '`' && input.charAt(position + 2) == '`';
+    }
+
+    private void tokenizeNumber() {
+
+        int start = position;
+
+        while (!isAtEnd() && Character.isDigit(peek())) {
+            advance();
+        }
+
+        String number = input.substring(start, position);
+
+        tokens.add(new Token(TokenType.NUMBER, number, start));
     }
 
     private void tokenizeText() {
