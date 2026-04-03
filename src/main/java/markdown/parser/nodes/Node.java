@@ -1,5 +1,7 @@
 package markdown.parser.nodes;
 
+import markdown.parser.visitor.NodeVisitor;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,4 +17,5 @@ public abstract class Node {
         return children;
     }
 
+    public abstract void accept(NodeVisitor visitor);
 }

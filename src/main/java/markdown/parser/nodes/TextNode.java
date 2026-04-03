@@ -1,5 +1,7 @@
 package markdown.parser.nodes;
 
+import markdown.parser.visitor.NodeVisitor;
+
 public class TextNode extends Node {
 
     private final String text;
@@ -12,4 +14,9 @@ public class TextNode extends Node {
         return text;
     }
 
+    @Override
+    public void accept(NodeVisitor visitor) {
+
+        visitor.visitText(this);
+    }
 }

@@ -1,5 +1,7 @@
 package markdown.parser.nodes;
 
+import markdown.parser.visitor.NodeVisitor;
+
 public class HeadingNode extends Node {
 
     private final int level;    // Stores heading level
@@ -12,4 +14,8 @@ public class HeadingNode extends Node {
         return level;
     }
 
+    @Override
+    public void accept(NodeVisitor visitor) {
+        visitor.visitHeading(this);
+    }
 }
