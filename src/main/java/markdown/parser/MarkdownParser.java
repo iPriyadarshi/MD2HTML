@@ -153,14 +153,10 @@ public class MarkdownParser implements Parser {
 
             if (token.getType() == TokenType.NEWLINE) {
 
-                codeBlock.addChild(
-                        new TextNode("\n")
-                );
+                codeBlock.addChild(new TextNode("\n"));
             } else {
 
-                codeBlock.addChild(
-                        new TextNode(token.getValue())
-                );
+                codeBlock.addChild(new TextNode(token.getValue()));
             }
         }
 
@@ -280,36 +276,42 @@ public class MarkdownParser implements Parser {
 
     private BoldNode parseBold() {
 
-        // consume **
-        advance();
-        advance();
+        advance(); // *
+        advance(); // *
 
         BoldNode bold = new BoldNode();
 
-        while (!check(TokenType.STAR) && !isAtEnd()) {
+        while (!(check(TokenType.STAR) && checkNext(TokenType.STAR)) && !isAtEnd()) {
 
-            bold.addChild(parseText());
+            Node inline = parseInline();
+
+            if (inline != null) {
+                bold.addChild(inline);
+            }
         }
 
-        // consume **
-        advance();
-        advance();
+        advance(); // *
+        advance(); // *
 
         return bold;
     }
 
     private ItalicNode parseItalic() {
 
-        advance(); // consume *
+        advance(); // *
 
         ItalicNode italic = new ItalicNode();
 
         while (!check(TokenType.STAR) && !isAtEnd()) {
 
-            italic.addChild(parseText());
+            Node inline = parseInline();
+
+            if (inline != null) {
+                italic.addChild(inline);
+            }
         }
 
-        advance(); // consume *
+        advance(); // *
 
         return italic;
     }
