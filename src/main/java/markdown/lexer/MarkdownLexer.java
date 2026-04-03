@@ -63,12 +63,7 @@ public class MarkdownLexer implements Lexer {
                     break;
 
                 case '\n':
-                    addToken(TokenType.NEWLINE, "\\n");
-                    advance();
-                    break;
-
-                case ' ':
-                case '\t':
+                    addToken(TokenType.NEWLINE, "\n");
                     advance();
                     break;
 

@@ -51,21 +51,30 @@ public class MarkdownParser implements Parser {
 
         int level = 0;
 
-        // count number of # symbols
+        // count number of #
         while (match(TokenType.HASH)) {
             level++;
         }
 
         HeadingNode heading = new HeadingNode(level);
 
-        // heading text
+        boolean firstText = true;
+
         while (!check(TokenType.NEWLINE) && !isAtEnd()) {
 
             Token token = advance();
 
             if (token.getType() == TokenType.TEXT) {
 
-                heading.addChild(new TextNode(token.getValue()));
+                String value = token.getValue();
+
+                // remove space after ###
+                if (firstText) {
+                    value = value.stripLeading();
+                    firstText = false;
+                }
+
+                heading.addChild(new TextNode(value));
             }
         }
 
@@ -80,11 +89,10 @@ public class MarkdownParser implements Parser {
 
         while (!check(TokenType.NEWLINE) && !isAtEnd()) {
 
-            Token token = advance();
+            Node inline = parseInline();
 
-            if (token.getType() == TokenType.TEXT) {
-
-                paragraph.addChild(new TextNode(token.getValue()));
+            if (inline != null) {
+                paragraph.addChild(inline);
             }
         }
 
@@ -93,7 +101,91 @@ public class MarkdownParser implements Parser {
         return paragraph;
     }
 
+    private Node parseInline() {
+
+        if (check(TokenType.STAR)) {
+
+            if (checkNext(TokenType.STAR)) {
+                return parseBold();
+            }
+
+            return parseItalic();
+        }
+
+        if (check(TokenType.BACKTICK)) {
+            return parseCode();
+        }
+
+        return parseText();
+    }
+
+    private BoldNode parseBold() {
+
+        // consume **
+        advance();
+        advance();
+
+        BoldNode bold = new BoldNode();
+
+        while (!check(TokenType.STAR) && !isAtEnd()) {
+
+            bold.addChild(parseText());
+        }
+
+        // consume **
+        advance();
+        advance();
+
+        return bold;
+    }
+
+    private ItalicNode parseItalic() {
+
+        advance(); // consume *
+
+        ItalicNode italic = new ItalicNode();
+
+        while (!check(TokenType.STAR) && !isAtEnd()) {
+
+            italic.addChild(parseText());
+        }
+
+        advance(); // consume *
+
+        return italic;
+    }
+
+    private CodeNode parseCode() {
+
+        advance(); // consume `
+
+        CodeNode code = new CodeNode();
+
+        while (!check(TokenType.BACKTICK) && !isAtEnd()) {
+
+            code.addChild(parseText());
+        }
+
+        advance(); // consume `
+
+        return code;
+    }
+
+    private TextNode parseText() {
+
+        Token token = advance();
+
+        return new TextNode(token.getValue());
+    }
+
     // helper methods
+
+    private boolean checkNext(TokenType type) {
+
+        if (position + 1 >= tokens.size()) return false;
+
+        return tokens.get(position + 1).getType() == type;
+    }
 
     private boolean match(TokenType type) {
 

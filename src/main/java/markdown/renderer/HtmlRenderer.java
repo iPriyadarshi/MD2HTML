@@ -53,6 +53,39 @@ public class HtmlRenderer implements Renderer {
 
             case TextNode textNode -> builder.addText(textNode.getText());
 
+            case BoldNode bold -> {
+
+                builder.openTag("strong");
+
+                for (Node child : bold.getChildren()) {
+                    renderNode(child, builder);
+                }
+
+                builder.closeTag("strong");
+            }
+
+            case ItalicNode italic -> {
+
+                builder.openTag("em");
+
+                for (Node child : italic.getChildren()) {
+                    renderNode(child, builder);
+                }
+
+                builder.closeTag("em");
+            }
+
+            case CodeNode code -> {
+
+                builder.openTag("code");
+
+                for (Node child : code.getChildren()) {
+                    renderNode(child, builder);
+                }
+
+                builder.closeTag("code");
+            }
+
             default -> throw new RuntimeException("Unknown node type: " + node.getClass());
         }
     }
